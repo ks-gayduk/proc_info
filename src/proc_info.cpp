@@ -1,4 +1,4 @@
-
+п»ї
 #include "stdafx.h"
 #include <iostream>
 #include <stdio.h>
@@ -8,16 +8,16 @@
 #include <string.h>
 #include <time.h>
 
-HANDLE hEvent = NULL; // Для перехвата Ctrl+C.
+HANDLE hEvent = NULL; // Р”Р»СЏ РїРµСЂРµС…РІР°С‚Р° Ctrl+C.
 
-// Прототип функции NtQuerySystemInformation().
+// РџСЂРѕС‚РѕС‚РёРї С„СѓРЅРєС†РёРё NtQuerySystemInformation().
 NTSTATUS (_stdcall *pNtQuerySystemInformation)(SYSTEM_INFORMATION_CLASS SystemInformationClass, 
 											   PVOID SystemInformation, 
 											   ULONG SystemInformationLength, 
 											   PULONG ReturnLength);
 HMODULE hNtdll;
 
-typedef struct _SYSTЕM_PROCЕSSЕS_INFO
+typedef struct _SYSTР•M_PROCР•SSР•S_INFO
 {
     ULONG            NextEntryOffset;
     ULONG            NumberOfThreads;
@@ -45,7 +45,7 @@ typedef struct _SYSTЕM_PROCЕSSЕS_INFO
     SIZE_T           PagefileUsage;
     SIZE_T           PeakPagefileUsage;
     SIZE_T           PrivatePageCount;
-#if _WIN32_WINNT >= 0x500 // Win2k и выше.
+#if _WIN32_WINNT >= 0x500 // Win2k Рё РІС‹С€Рµ.
     // IO counters
     ULONGLONG        ReadOperationCount;
     ULONGLONG        WriteOperationCount;
@@ -54,36 +54,36 @@ typedef struct _SYSTЕM_PROCЕSSЕS_INFO
     ULONGLONG        WriteTransferCount;
     ULONGLONG        OtherTransferCount;
 #endif
-} SYSTЕM_PROCЕSSЕS_INFO, *PSYSTЕM_PROCЕSSЕS_INFO;
+} SYSTР•M_PROCР•SSР•S_INFO, *PSYSTР•M_PROCР•SSР•S_INFO;
 
-// Получение информации о процессе по его PID.
-BOOL QueryProcInfo(DWORD dwPID, PSYSTЕM_PROCЕSSЕS_INFO pProcInfo)
+// РџРѕР»СѓС‡РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїСЂРѕС†РµСЃСЃРµ РїРѕ РµРіРѕ PID.
+BOOL QueryProcInfo(DWORD dwPID, PSYSTР•M_PROCР•SSР•S_INFO pProcInfo)
 {
 	NTSTATUS result;
 
-	// Определение требуемого размера буфера.
+	// РћРїСЂРµРґРµР»РµРЅРёРµ С‚СЂРµР±СѓРµРјРѕРіРѕ СЂР°Р·РјРµСЂР° Р±СѓС„РµСЂР°.
 	DWORD dwReturnLength = 0;
 	result = pNtQuerySystemInformation(SystemProcessInformation, NULL, 0, &dwReturnLength);
 	if (result != STATUS_INFO_LENGTH_MISMATCH) return FALSE;
 
-	// Получение информации обо всех процессах.
+	// РџРѕР»СѓС‡РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё РѕР±Рѕ РІСЃРµС… РїСЂРѕС†РµСЃСЃР°С….
 	BYTE *pBuffer = new BYTE [dwReturnLength];
 	result = pNtQuerySystemInformation(SystemProcessInformation, pBuffer, dwReturnLength, 
 		&dwReturnLength);
 	if (result != STATUS_SUCCESS) return FALSE;
 
-	SYSTЕM_PROCЕSSЕS_INFO *spi;
+	SYSTР•M_PROCР•SSР•S_INFO *spi;
 	DWORD offset = 0;
 	BOOL flag = FALSE;
 
-	// Ищем нужный процесс по ID.
+	// РС‰РµРј РЅСѓР¶РЅС‹Р№ РїСЂРѕС†РµСЃСЃ РїРѕ ID.
 	do
 	{
-		spi = (SYSTЕM_PROCЕSSЕS_INFO*)(pBuffer + offset);
+		spi = (SYSTР•M_PROCР•SSР•S_INFO*)(pBuffer + offset);
 
 		if (spi->UniqueProcessId == dwPID)
 		{
-			memcpy(pProcInfo, spi, sizeof(SYSTЕM_PROCЕSSЕS_INFO));
+			memcpy(pProcInfo, spi, sizeof(SYSTР•M_PROCР•SSР•S_INFO));
 			flag = TRUE;
 			break;
 		}
@@ -97,13 +97,13 @@ BOOL QueryProcInfo(DWORD dwPID, PSYSTЕM_PROCЕSSЕS_INFO pProcInfo)
 	return TRUE;
 }
 
-// Получение информации о процессе по его PID (+ загрузка ЦП).
-BOOL QueryProcInfoEx(DWORD dwPID, PSYSTЕM_PROCЕSSЕS_INFO pProcInfo, BYTE *pCpuUsage)
+// РџРѕР»СѓС‡РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїСЂРѕС†РµСЃСЃРµ РїРѕ РµРіРѕ PID (+ Р·Р°РіСЂСѓР·РєР° Р¦Рџ).
+BOOL QueryProcInfoEx(DWORD dwPID, PSYSTР•M_PROCР•SSР•S_INFO pProcInfo, BYTE *pCpuUsage)
 {
 	BOOL result;
-	SYSTЕM_PROCЕSSЕS_INFO spi1, spi2;
+	SYSTР•M_PROCР•SSР•S_INFO spi1, spi2;
 
-	// Подсчет загрузки за 0.1 сек.
+	// РџРѕРґСЃС‡РµС‚ Р·Р°РіСЂСѓР·РєРё Р·Р° 0.1 СЃРµРє.
 	result = QueryProcInfo(dwPID, &spi1); if (!result) return FALSE;
 	Sleep(100);
 	result = QueryProcInfo(dwPID, &spi2); if (!result) return FALSE;
@@ -115,14 +115,14 @@ BOOL QueryProcInfoEx(DWORD dwPID, PSYSTЕM_PROCЕSSЕS_INFO pProcInfo, BYTE *pCpuUs
 	dwTotalUsage    = dwDelUserTime + dwDelKernelTime;
 
 	*pCpuUsage    = (BYTE)dwTotalUsage;
-	if (dwTotalUsage > 100) *pCpuUsage = 100; // Из-за неточности работы Sleep() такое может быть.
+	if (dwTotalUsage > 100) *pCpuUsage = 100; // РР·-Р·Р° РЅРµС‚РѕС‡РЅРѕСЃС‚Рё СЂР°Р±РѕС‚С‹ Sleep() С‚Р°РєРѕРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ.
 	
-	memcpy(pProcInfo, &spi2, sizeof(SYSTЕM_PROCЕSSЕS_INFO));
+	memcpy(pProcInfo, &spi2, sizeof(SYSTР•M_PROCР•SSР•S_INFO));
 
 	return TRUE;
 }
 
-// Обработчик событий консоли.
+// РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№ РєРѕРЅСЃРѕР»Рё.
 BOOL WINAPI Handler(DWORD dwCtrlType)
 {
 	if (!hEvent) return FALSE;
@@ -139,7 +139,7 @@ BOOL WINAPI Handler(DWORD dwCtrlType)
 	return TRUE;
 }
 
-// Разность между отсчетами системного времени.
+// Р Р°Р·РЅРѕСЃС‚СЊ РјРµР¶РґСѓ РѕС‚СЃС‡РµС‚Р°РјРё СЃРёСЃС‚РµРјРЅРѕРіРѕ РІСЂРµРјРµРЅРё.
 SYSTEMTIME DiffSystemTime(const SYSTEMTIME &st1, const SYSTEMTIME &st2)
 {
     SYSTEMTIME     res;
@@ -171,20 +171,20 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	setlocale(0, "");
 
-	// Загружаем библиотеку и получаем адрес функции.
+	// Р—Р°РіСЂСѓР¶Р°РµРј Р±РёР±Р»РёРѕС‚РµРєСѓ Рё РїРѕР»СѓС‡Р°РµРј Р°РґСЂРµСЃ С„СѓРЅРєС†РёРё.
 	hNtdll = LoadLibrary(L"ntdll.dll");
 	if (!hNtdll) return 1;
 	(FARPROC&)(pNtQuerySystemInformation) = GetProcAddress(hNtdll, "NtQuerySystemInformation");
 	if (!pNtQuerySystemInformation) { FreeLibrary(hNtdll); return 1; }
 
-	SYSTЕM_PROCЕSSЕS_INFO spi;
+	SYSTР•M_PROCР•SSР•S_INFO spi;
 	BYTE                  nCpuUsage;
 	DWORD                 dwPID;
 	DWORD                 dwWait;
 
 	dwPID = _wtoi(argv[1]);
 
-	// Задаем обработчик для событий консоли.
+	// Р—Р°РґР°РµРј РѕР±СЂР°Р±РѕС‚С‡РёРє РґР»СЏ СЃРѕР±С‹С‚РёР№ РєРѕРЅСЃРѕР»Рё.
 	hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	if (!hEvent) { FreeLibrary(hNtdll); return 1; }
 	if (!SetConsoleCtrlHandler(Handler, TRUE)) { FreeLibrary(hNtdll); return 1; }
@@ -194,12 +194,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	FILE *pf = fopen(szBuffer, "w");
 	if (!pf) { FreeLibrary(hNtdll); return 1; }
 
-	printf("Начат мониторинг процесса.\n");
+	printf("РќР°С‡Р°С‚ РјРѕРЅРёС‚РѕСЂРёРЅРі РїСЂРѕС†РµСЃСЃР°.\n");
 	SYSTEMTIME st1, st2, st_dt;
 	GetLocalTime(&st1);
 	sprintf(szBuffer, "%02d:%02d:%02d,%d", st1.wHour, st1.wMinute, st1.wSecond, 
 		st1.wMilliseconds);
-	printf("Время начала: %s\n", szBuffer);
+	printf("Р’СЂРµРјСЏ РЅР°С‡Р°Р»Р°: %s\n", szBuffer);
 	time_t t1 = time(NULL);
 
 	while(TRUE)
@@ -226,23 +226,23 @@ int _tmain(int argc, _TCHAR* argv[])
 		time_t dt = t2 - t1;
 		int min = dt / 60;
 		int sec = dt - min * 60;
-		sprintf(szBuffer, "Длительность мониторинга: %02d:%02d", min, sec);
+		sprintf(szBuffer, "Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РјРѕРЅРёС‚РѕСЂРёРЅРіР°: %02d:%02d", min, sec);
 		printf("\r%s", szBuffer);
 
 		dwWait = WaitForSingleObject(hEvent, 100);
 		if (dwWait == WAIT_OBJECT_0) break;
 	}
 
-	printf("\nМониторинг процесса успешно завершен.\n");
+	printf("\nРњРѕРЅРёС‚РѕСЂРёРЅРі РїСЂРѕС†РµСЃСЃР° СѓСЃРїРµС€РЅРѕ Р·Р°РІРµСЂС€РµРЅ.\n");
 	GetLocalTime(&st2);
 	sprintf(szBuffer, "%02d:%02d:%02d,%d", st2.wHour, st2.wMinute, st2.wSecond, 
 		st2.wMilliseconds);
-	printf("Время окончания: %s\n", szBuffer);
+	printf("Р’СЂРµРјСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ: %s\n", szBuffer);
 
 	st_dt = DiffSystemTime(st1, st2);
 	sprintf(szBuffer, "%02d:%02d:%02d,%d", st_dt.wHour, st_dt.wMinute, st_dt.wSecond, 
 		st_dt.wMilliseconds);
-	printf("Длительность мониторинга (точно): %s\n", szBuffer);
+	printf("Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РјРѕРЅРёС‚РѕСЂРёРЅРіР° (С‚РѕС‡РЅРѕ): %s\n", szBuffer);
 
 	fclose(pf);
 	FreeLibrary(hNtdll);
